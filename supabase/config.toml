@@ -1,0 +1,13 @@
+project_id = "iqusdouldpxdxaoewlpt"
+
+[functions.ecg-ingest]
+verify_jwt = false
+
+[functions.emergency-alert]
+verify_jwt = false
+
+[functions.find-hospitals]
+verify_jwt = false
+
+[functions.trigger-emergency]
+verify_jwt = false
