@@ -31,9 +31,14 @@ export default function ArduinoConnect() {
 
         lines.forEach((line) => {
           const clean = line.trim();
-          if (clean !== "" && !isNaN(parseInt(clean))) {
-            setData(clean);
-            pushECGValue(parseInt(clean));
+          try {
+            const json = JSON.parse(clean);
+            if (json && typeof json.ecg === "number") {
+              setData(json.ecg);
+              pushECGValue(json.ecg);
+            }
+          } catch (e) {
+            // Ignore non-JSON lines
           }
         });
       }

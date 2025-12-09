@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import emailjs from "@emailjs/browser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Heart, AlertTriangle } from "lucide-react";
@@ -22,6 +23,25 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [displayReadings, setDisplayReadings] = useState<number[]>([]);
   const ecgVal = useECGStream();
+
+  const handleTestAlert = async () => {
+    try {
+      await emailjs.send(
+        "service_dehwim4",                 // your EmailJS service ID
+        "template_rifct2b",       // your template ID
+        {
+          type: "TEST ALERT",
+          message: "This is a TEST emergency alert from the HRIDAYA RAKSHAK system."
+        },
+        "RbN4Qs2il-qWu_Pcq"                // your public key
+      );
+
+      alert("✔ Test alert email sent successfully!");
+    } catch (err) {
+      console.error("EmailJS error:", err);
+      alert("❌ Failed to send email.");
+    }
+  };
 
   useEffect(() => {
     // Keep last 200 readings for display
@@ -145,6 +165,21 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
         <p className="text-xs text-muted-foreground mt-2">
           Real-time ECG data from AD8232 sensor via Arduino
         </p>
+        <button
+          onClick={handleTestAlert}
+          style={{
+            padding: "10px 16px",
+            background: "red",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "16px",
+            cursor: "pointer",
+            marginTop: "12px"
+          }}
+        >
+          🚨 Test Emergency Alert
+        </button>
       </CardContent>
     </Card>
   );

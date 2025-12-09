@@ -10,7 +10,11 @@ export default function useECGStream() {
   const [reading, setReading] = useState(null);
 
   useEffect(() => {
-    const callback = (val) => setReading(val);
+    const callback = (val) => {
+      if (typeof val === "number") {
+        setReading(val);
+      }
+    };
 
     subscribers.push(callback);
 
