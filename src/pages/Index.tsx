@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Activity, Heart, LogOut, Settings, Bell } from "lucide-react";
+import { Activity, Heart, Settings, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useECGData } from "@/hooks/useECGData";
 import { useLocation } from "@/hooks/useLocation";
-import { useHospitals } from "@/hooks/useHospitals";
-import AuthForm from "@/components/AuthForm";
-import ECGMonitor from "@/components/ECGMonitor";
+import NearestHospital from "@/components/NearestHospital";
 import HospitalMap from "@/components/HospitalMap";
+import { useNearestHospital } from "@/hooks/useNearestHospital";
 import EmergencyContacts from "@/components/EmergencyContacts";
 import AlertStatus from "@/components/AlertStatus";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
+import ECGMonitor from "@/components/ECGMonitor";
 
 interface Contact {
   id: string;
@@ -20,8 +20,6 @@ interface Contact {
   relationship?: string;
   priority: number;
 }
-
-
 
 interface Alert {
   id: string;
@@ -33,95 +31,86 @@ interface Alert {
 }
 
 const Index = () => {
-  const { user, loading, signIn, signUp, signOut, signInWithGoogle } = useAuth();
+  // no auth now — keep ECG and location hooks working
   const { location, isLoading: locationLoading } = useLocation();
-  const { readings, isConnected, heartRate, stElevationDetected } = useECGData(user?.id);
-  const { hospitals, isLoading: hospitalsLoading } = useHospitals(
-    location?.latitude,
-    location?.longitude
-  );
+  const { readings, isConnected, heartRate, stElevationDetected } = useECGData();
+  const { hospitals, loading: hospitalsLoading } = useNearestHospital(location);
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [aiResult, setAiResult] = useState<string | null>(null);
 
   const analyzeECG = async () => {
-  try {
-    if (!readings || readings.length === 0) {
-      setAiResult("No ECG data available to analyze yet. Please ensure your device is connected.");
-      return;
+    try {
+      if (!readings || readings.length === 0) {
+        setAiResult("No ECG data available to analyze yet. Please ensure your device is connected.");
+        return;
+      }
+
+      const response = await fetch("http://localhost:8080/analyze-ecg", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          signal: readings,
+          sampling_rate: 250,
+        }),
+      });
+
+      if (!response.ok) {
+        setAiResult("AI analysis service error. Please try again later.");
+        return;
+      }
+
+      const data = await response.json();
+
+      const summary =
+        data?.summary || "Analysis completed, but no summary was returned.";
+      const patterns = Array.isArray(data?.patterns)
+        ? data.patterns.join(", ")
+        : "No specific patterns returned.";
+      const risk = data?.risk_level
+        ? `Risk level: ${data.risk_level.toUpperCase()}`
+        : "";
+
+      setAiResult(
+        `${summary}\nPatterns: ${patterns}${risk ? `\n${risk}` : ""}`
+      );
+    } catch (error) {
+      console.error("AI ECG analysis failed:", error);
+      setAiResult(
+        "Failed to analyze ECG. Please check your connection or try again later."
+      );
     }
+  };
 
-    const response = await fetch("http://localhost:8080/analyze-ecg", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        signal: readings,
-        sampling_rate: 250,
-      }),
-    });
-
-    if (!response.ok) {
-      setAiResult("AI analysis service error. Please try again later.");
-      return;
-    }
-
-    const data = await response.json();
-
-    const summary =
-      data?.summary || "Analysis completed, but no summary was returned.";
-    const patterns = Array.isArray(data?.patterns)
-      ? data.patterns.join(", ")
-      : "No specific patterns returned.";
-    const risk = data?.risk_level
-      ? `Risk level: ${data.risk_level.toUpperCase()}`
-      : "";
-
-    setAiResult(
-      `${summary}\nPatterns: ${patterns}${risk ? `\n${risk}` : ""}`
-    );
-  } catch (error) {
-    console.error("AI ECG analysis failed:", error);
-    setAiResult(
-      "Failed to analyze ECG. Please check your connection or try again later."
-    );
-  }
-};
+  // fetch public contacts (no user filter)
   const fetchContacts = async () => {
-    if (!user) return;
     const { data } = await supabase
       .from("emergency_contacts")
       .select("*")
-      .eq("user_id", user.id)
       .order("priority");
     if (data) setContacts(data);
   };
 
-
+  // fetch latest alerts (no user filter)
   const fetchAlerts = async () => {
-    if (!user) return;
     const { data } = await supabase
       .from("emergency_alerts")
       .select("*")
-      .eq("user_id", user.id)
       .order("triggered_at", { ascending: false })
       .limit(10);
     if (data) setAlerts(data);
   };
 
   useEffect(() => {
-    if (user) {
-      fetchContacts();
-      fetchAlerts();
-    }
-  }, [user]);
+    fetchContacts();
+    fetchAlerts();
+  }, []);
 
-  // Subscribe to realtime alerts
+  // Realtime subscription for all alerts (no user filter)
   useEffect(() => {
-    if (!user) return;
-
     const channel = supabase
       .channel("alerts-channel")
       .on(
@@ -130,7 +119,6 @@ const Index = () => {
           event: "*",
           schema: "public",
           table: "emergency_alerts",
-          filter: `user_id=eq.${user.id}`,
         },
         () => {
           fetchAlerts();
@@ -141,28 +129,7 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-          <span className="text-muted-foreground">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <AuthForm
-        onSignIn={signIn}
-        onSignUp={signUp}
-        onGoogle={signInWithGoogle}
-      />
-    );
-  }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background page-transition">
@@ -196,7 +163,7 @@ const Index = () => {
               onClick={async () => {
                 try {
                   if (!("serial" in navigator)) {
-                    alert("WebSerial is not supported in this browser. Please use Chrome.");
+                    alert("WebSerial is not supported in this browser.");
                     return;
                   }
 
@@ -206,7 +173,6 @@ const Index = () => {
                   const reader = port.readable.getReader();
                   alert("Arduino Connected!");
 
-                  // Optional serial listener
                   const { value, done } = await reader.read();
                   if (!done && value) {
                     console.log(new TextDecoder().decode(value));
@@ -218,9 +184,6 @@ const Index = () => {
               }}
             >
               Connect Arduino
-            </Button>
-            <Button variant="ghost" size="icon" onClick={signOut}>
-              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -247,10 +210,7 @@ const Index = () => {
                 <CardTitle>AI ECG Analysis (Beta)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button
-                  onClick={analyzeECG}
-                  className="w-full"
-                >
+                <Button onClick={analyzeECG} className="w-full">
                   Analyze ECG
                 </Button>
 
@@ -260,19 +220,28 @@ const Index = () => {
                   </div>
                 )}
                 <p className="text-[10px] text-muted-foreground">
-                  This is an automated pattern analysis for educational purposes only and is NOT a medical diagnosis.
+                  This is an automated pattern analysis for educational purposes only. NOT a medical diagnosis.
                 </p>
               </CardContent>
             </Card>
+
+            <NearestHospital location={location} />
             <HospitalMap
-              hospitals={hospitals}
+              hospitals={hospitals.map((h, idx) => ({
+                id: h.name ? `${h.name}-${idx}` : String(idx),
+                name: h.name,
+                address: h.address || "",
+                phone: h.phone || "",
+                latitude: h.latitude,
+                longitude: h.longitude,
+                distance_km: Number((h.distance || 0).toFixed(2)),
+              }))}
               userLocation={location}
               isLoading={locationLoading || hospitalsLoading}
             />
             <EmergencyContacts
               contacts={contacts}
               onContactsChange={fetchContacts}
-              userId={user.id}
             />
           </div>
         </div>

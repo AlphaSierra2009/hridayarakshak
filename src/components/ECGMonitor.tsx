@@ -19,32 +19,68 @@ interface ECGMonitorProps {
   stElevationDetected?: boolean;
 }
 
-const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: ECGMonitorProps) => {
+const ECGMonitor = ({
+  readings,
+  isConnected,
+  heartRate,
+  stElevationDetected,
+}: ECGMonitorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [displayReadings, setDisplayReadings] = useState<number[]>([]);
+  const [location, setLocation] = useState<{ lat: number | null; lon: number | null }>({
+    lat: null,
+    lon: null,
+  });
+
   const ecgVal = useECGStream();
+
+  // ✅ FIXED — Hooks MUST be inside component
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setLocation({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+      });
+    }
+  }, []);
 
   const handleTestAlert = async () => {
     try {
+      const { lat, lon } = location;
+
+      const googleMapsLink =
+        lat && lon ? `https://www.google.com/maps?q=${lat},${lon}` : "Location unavailable";
+
+      const osmLink =
+        lat && lon
+          ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}`
+          : "Location unavailable";
+
       await emailjs.send(
-        "service_dehwim4",                 // your EmailJS service ID
-        "template_rifct2b",       // your template ID
+        "service_dehwim4",
+        "template_rifct2b",
         {
           type: "TEST ALERT",
-          message: "This is a TEST emergency alert from the HRIDAYA RAKSHAK system."
+          message: "A test alert has been triggered.",
+          latitude: lat,
+          longitude: lon,
+          google_map: googleMapsLink,
+          osm_map: osmLink,
         },
-        "RbN4Qs2il-qWu_Pcq"                // your public key
+        "RbN4Qs2il-qWu_Pcq"
       );
 
-      alert("✔ Test alert email sent successfully!");
+      alert("✔ Test alert email sent with GPS!");
     } catch (err) {
       console.error("EmailJS error:", err);
       alert("❌ Failed to send email.");
     }
   };
 
+  // Keep last 200 readings for display
   useEffect(() => {
-    // Keep last 200 readings for display
     const values = readings.slice(-200).map((r) => r.reading_value);
     setDisplayReadings(values);
   }, [readings]);
@@ -55,6 +91,7 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
     }
   }, [ecgVal]);
 
+  // DRAW ECG GRAPH
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -65,23 +102,20 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
     const width = canvas.width;
     const height = canvas.height;
 
-    // Clear canvas
+    // Clear
     ctx.fillStyle = "hsl(215, 35%, 8%)";
     ctx.fillRect(0, 0, width, height);
 
-    // Draw grid
+    // Grid
     ctx.strokeStyle = "hsl(215, 25%, 20%)";
     ctx.lineWidth = 0.5;
 
-    // Vertical lines
     for (let x = 0; x < width; x += 20) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
     }
-
-    // Horizontal lines
     for (let y = 0; y < height; y += 20) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -89,7 +123,7 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
       ctx.stroke();
     }
 
-    // Draw ECG line
+    // ECG Line
     if (displayReadings.length > 1) {
       ctx.strokeStyle = stElevationDetected ? "hsl(0, 85%, 55%)" : "hsl(142, 70%, 55%)";
       ctx.lineWidth = 2;
@@ -101,23 +135,18 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
 
       displayReadings.forEach((value, index) => {
         const x = index * xStep;
-        // Normalize AD8232 raw values (~300–380 baseline, spikes ~490)
-        const baseline = 340; 
-        const gain = 40;      
+        const baseline = 340;
+        const gain = 40;
         const normalized = (value - baseline) / gain;
         const y = midY - normalized * scale;
 
-        if (index === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
+        index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       });
 
       ctx.stroke();
     }
 
-    // Draw scan line effect
+    // Scan line
     if (displayReadings.length > 0) {
       const scanX = (displayReadings.length % 200) * (width / 200);
       ctx.fillStyle = "rgba(142, 200, 150, 0.3)";
@@ -133,10 +162,12 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
             <Activity className="h-5 w-5 text-ecg-line" />
             ECG Monitor
           </CardTitle>
+
           <div className="flex items-center gap-2">
             <Badge variant={isConnected ? "default" : "secondary"} className={isConnected ? "bg-success" : ""}>
               {isConnected ? "Connected" : "Disconnected"}
             </Badge>
+
             {stElevationDetected && (
               <Badge variant="destructive" className="bg-emergency emergency-pulse">
                 <AlertTriangle className="h-3 w-3 mr-1" />
@@ -146,25 +177,25 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
-            width={800}
-            height={200}
-            className="w-full h-48 rounded-lg border border-ecg-grid soft-shadow fade-in"
-          />
-          {heartRate && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 bg-ecg-background/90 px-3 py-1 rounded-md soft-shadow hover-lift transition-all">
-              <Heart className="h-4 w-4 text-emergency animate-pulse" />
-              <span className="text-ecg-line font-mono font-bold">{heartRate}</span>
-              <span className="text-muted-foreground text-sm">BPM</span>
-            </div>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Real-time ECG data from AD8232 sensor via Arduino
-        </p>
+        <canvas
+          ref={canvasRef}
+          width={800}
+          height={200}
+          className="w-full h-48 rounded-lg border border-ecg-grid soft-shadow fade-in"
+        />
+
+        {heartRate && (
+          <div className="absolute top-2 right-2 flex items-center gap-1 bg-ecg-background/90 px-3 py-1 rounded-md soft-shadow transition-all">
+            <Heart className="h-4 w-4 text-emergency animate-pulse" />
+            <span className="text-ecg-line font-mono font-bold">{heartRate}</span>
+            <span className="text-muted-foreground text-sm">BPM</span>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground mt-2">Real-time ECG via Arduino</p>
+
         <button
           onClick={handleTestAlert}
           style={{
@@ -175,7 +206,7 @@ const ECGMonitor = ({ readings, isConnected, heartRate, stElevationDetected }: E
             borderRadius: "6px",
             fontSize: "16px",
             cursor: "pointer",
-            marginTop: "12px"
+            marginTop: "12px",
           }}
         >
           🚨 Test Emergency Alert
