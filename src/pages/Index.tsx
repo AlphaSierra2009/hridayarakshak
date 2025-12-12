@@ -10,6 +10,7 @@ import { useNearestHospital } from "@/hooks/useNearestHospital";
 import EmergencyContacts from "@/components/EmergencyContacts";
 import AlertStatus from "@/components/AlertStatus";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import useECGStream from "@/hooks/useECGStream";
 
 import ECGMonitor from "@/components/ECGMonitor";
 
@@ -35,6 +36,7 @@ const Index = () => {
   const { location, isLoading: locationLoading } = useLocation();
   const { readings, isConnected, heartRate, stElevationDetected } = useECGData();
   const { hospitals, loading: hospitalsLoading } = useNearestHospital(location);
+  const { connected, connect } = useECGStream();
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -160,30 +162,10 @@ const Index = () => {
               variant="default"
               size="sm"
               className="soft-shadow hover-lift transition-all"
-              onClick={async () => {
-                try {
-                  if (!("serial" in navigator)) {
-                    alert("WebSerial is not supported in this browser.");
-                    return;
-                  }
-
-                  const port = await navigator.serial.requestPort();
-                  await port.open({ baudRate: 9600 });
-
-                  const reader = port.readable.getReader();
-                  alert("Arduino Connected!");
-
-                  const { value, done } = await reader.read();
-                  if (!done && value) {
-                    console.log(new TextDecoder().decode(value));
-                  }
-                } catch (err) {
-                  console.error("Arduino connection failed:", err);
-                  alert("Failed to connect to Arduino.");
-                }
-              }}
+              onClick={() => connect()}
+              disabled={connected}
             >
-              Connect Arduino
+              {connected ? "Arduino Connected" : "Connect Arduino"}
             </Button>
           </div>
         </div>
