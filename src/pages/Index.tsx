@@ -10,6 +10,7 @@ import { useNearestHospital } from "@/hooks/useNearestHospital";
 import EmergencyContacts from "@/components/EmergencyContacts";
 import AlertStatus from "@/components/AlertStatus";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import useECGStream from "@/hooks/useECGStream";
 
 import ECGMonitor from "@/components/ECGMonitor";
 
@@ -35,10 +36,14 @@ const Index = () => {
   const { location, isLoading: locationLoading } = useLocation();
   const { readings, isConnected, heartRate, stElevationDetected } = useECGData();
   const { hospitals, loading: hospitalsLoading } = useNearestHospital(location);
+  const { connected, connect } = useECGStream();
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [aiResult, setAiResult] = useState<string | null>(null);
+
+  const ANALYSIS_URL = import.meta.env.VITE_ANALYSIS_URL || "http://localhost:54321/functions/v1/analyze-ecg";
+  const [analyzing, setAnalyzing] = useState(false);
 
   const analyzeECG = async () => {
     try {
@@ -47,16 +52,23 @@ const Index = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8080/analyze-ecg", {
+      setAnalyzing(true);
+
+      // extract numeric values from readings (support both raw array and objects)
+      const signal = readings.map((r: any) => (typeof r === "number" ? r : r.reading_value ?? 0));
+
+      const response = await fetch(ANALYSIS_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          signal: readings,
+          signal,
           sampling_rate: 250,
         }),
       });
+
+      setAnalyzing(false);
 
       if (!response.ok) {
         setAiResult("AI analysis service error. Please try again later.");
@@ -65,23 +77,15 @@ const Index = () => {
 
       const data = await response.json();
 
-      const summary =
-        data?.summary || "Analysis completed, but no summary was returned.";
-      const patterns = Array.isArray(data?.patterns)
-        ? data.patterns.join(", ")
-        : "No specific patterns returned.";
-      const risk = data?.risk_level
-        ? `Risk level: ${data.risk_level.toUpperCase()}`
-        : "";
+      const summary = data?.summary || "Analysis completed, but no summary was returned.";
+      const patterns = Array.isArray(data?.patterns) ? data.patterns.join(", ") : "No specific patterns returned.";
+      const risk = data?.risk_level ? `Risk level: ${data.risk_level.toUpperCase()}` : "";
 
-      setAiResult(
-        `${summary}\nPatterns: ${patterns}${risk ? `\n${risk}` : ""}`
-      );
+      setAiResult(`${summary}\nPatterns: ${patterns}${risk ? `\n${risk}` : ""}`);
     } catch (error) {
       console.error("AI ECG analysis failed:", error);
-      setAiResult(
-        "Failed to analyze ECG. Please check your connection or try again later."
-      );
+      setAnalyzing(false);
+      setAiResult("Failed to analyze ECG. Please check your connection or try again later.");
     }
   };
 
@@ -120,8 +124,22 @@ const Index = () => {
           schema: "public",
           table: "emergency_alerts",
         },
-        () => {
+        (payload: any) => {
+          // Refresh list
           fetchAlerts();
+
+          // On INSERT show browser notification
+          try {
+            if (payload?.eventType === 'INSERT' || payload?.eventType === 'insert' || payload?.type === 'INSERT') {
+              const rec = payload?.new || payload?.record || payload?.new_record || null;
+              const st = rec?.stemi_level ?? rec?.stemi ?? null;
+              const msg = rec ? `${rec.alert_type} — ST% ${st ?? '--'}` : 'New emergency alert';
+              if (typeof Notification !== 'undefined') {
+                if (Notification.permission === 'granted') new Notification('Emergency Alert', { body: msg });
+                else if (Notification.permission !== 'denied') Notification.requestPermission().then(p => { if (p === 'granted') new Notification('Emergency Alert', { body: msg }); });
+              }
+            }
+          } catch (nErr) { console.warn('Realtime notification failed', nErr); }
         }
       )
       .subscribe();
@@ -160,30 +178,10 @@ const Index = () => {
               variant="default"
               size="sm"
               className="soft-shadow hover-lift transition-all"
-              onClick={async () => {
-                try {
-                  if (!("serial" in navigator)) {
-                    alert("WebSerial is not supported in this browser.");
-                    return;
-                  }
-
-                  const port = await navigator.serial.requestPort();
-                  await port.open({ baudRate: 9600 });
-
-                  const reader = port.readable.getReader();
-                  alert("Arduino Connected!");
-
-                  const { value, done } = await reader.read();
-                  if (!done && value) {
-                    console.log(new TextDecoder().decode(value));
-                  }
-                } catch (err) {
-                  console.error("Arduino connection failed:", err);
-                  alert("Failed to connect to Arduino.");
-                }
-              }}
+              onClick={() => connect()}
+              disabled={connected}
             >
-              Connect Arduino
+              {connected ? "Arduino Connected" : "Connect Arduino"}
             </Button>
           </div>
         </div>
@@ -210,12 +208,12 @@ const Index = () => {
                 <CardTitle>AI ECG Analysis (Beta)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button onClick={analyzeECG} className="w-full">
-                  Analyze ECG
+                <Button onClick={analyzeECG} className="w-full" disabled={analyzing}>
+                  {analyzing ? "Analyzing…" : "Analyze ECG"}
                 </Button>
 
                 {aiResult && (
-                  <div className="p-3 rounded-md bg-muted text-sm">
+                  <div className="p-3 rounded-md bg-muted text-sm whitespace-pre-line">
                     {aiResult}
                   </div>
                 )}

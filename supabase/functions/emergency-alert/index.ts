@@ -34,6 +34,9 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // Twilio env vars (set via Supabase project > Functions > Config or your deployment environment)
+    // TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER (SMS), TWILIO_WHATSAPP_NUMBER (e.g. whatsapp:+123456789)
+    // EmailJS env vars: EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_USER_ID (public key)
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
@@ -124,22 +127,92 @@ Address: ${hospital.address}`;
         notifications.push(notification);
       }
 
+      // Optionally notify hospital via WhatsApp or EmailJS if configured
+      try {
+        if (twilioAccountSid && twilioAuthToken && twilioWhatsappNumber && hospital.phone_number) {
+          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+          const waResp = await fetch(twilioUrl, {
+            method: "POST",
+            headers: {
+              "Authorization": `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              To: `whatsapp:${hospital.phone_number}`,
+              From: `whatsapp:${twilioWhatsappNumber}`,
+              Body: hospitalMessage,
+            }),
+          });
+          const waJson = await waResp.json();
+          console.log(`Hospital WhatsApp sent to ${hospital.name}:`, waJson);
+
+          await supabase.from("alert_notifications").insert({
+            alert_id,
+            recipient_type: "hospital",
+            recipient_id: hospital.id,
+            notification_method: "whatsapp",
+            status: waResp.ok ? "delivered" : "failed",
+            sent_at: new Date().toISOString(),
+            delivered_at: waResp.ok ? new Date().toISOString() : null,
+            error_message: waResp.ok ? null : JSON.stringify(waJson),
+          });
+        }
+
+        if (emailjsServiceId && emailjsTemplateId && emailjsUserId && hospital.email) {
+          const emailResp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              service_id: emailjsServiceId,
+              template_id: emailjsTemplateId,
+              user_id: emailjsUserId,
+              template_params: {
+                to_name: hospital.name,
+                message: hospitalMessage,
+                location: locationUrl,
+                time: new Date().toISOString(),
+                phone: hospital.phone_number || "N/A",
+              },
+            }),
+          });
+          const emailJson = await emailResp.json();
+          console.log(`Hospital EmailJS sent to ${hospital.name}:`, emailJson);
+
+          await supabase.from("alert_notifications").insert({
+            alert_id,
+            recipient_type: "hospital",
+            recipient_id: hospital.id,
+            notification_method: "email",
+            status: emailResp.ok ? "sent" : "failed",
+            sent_at: new Date().toISOString(),
+            delivered_at: emailResp.ok ? new Date().toISOString() : null,
+            error_message: emailResp.ok ? null : JSON.stringify(emailJson),
+          });
+        }
+      } catch (notifyErr) {
+        console.error(`Failed to notify hospital ${hospital.name} via secondary channels:`, notifyErr);
+      }
+
       // In production, integrate with hospital API or emergency services
       // For now, we log the notification
       console.log(`Hospital notification sent to ${hospital.name}:`, hospitalMessage);
     }
 
-    // Send SMS to emergency contacts if Twilio is configured
-    if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber && contacts && contacts.length > 0) {
+    // Prepare EmailJS config (if available)
+    const emailjsServiceId = Deno.env.get("EMAILJS_SERVICE_ID");
+    const emailjsTemplateId = Deno.env.get("EMAILJS_TEMPLATE_ID");
+    const emailjsUserId = Deno.env.get("EMAILJS_USER_ID");
+    const twilioWhatsappNumber = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
+
+    // Send SMS / WhatsApp to emergency contacts if Twilio is configured
+    if ((twilioAccountSid && twilioAuthToken && twilioPhoneNumber) && contacts && contacts.length > 0) {
       const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
       
       for (const contact of contacts) {
         try {
-          const smsBody = `${emergencyMessage}
+          const smsBody = `${emergencyMessage}\n\nContact: ${contact.name}\nRelationship: ${contact.relationship || "Emergency Contact"}`;
 
-Contact: ${contact.name}
-Relationship: ${contact.relationship || "Emergency Contact"}`;
-
+          // Send SMS
           const response = await fetch(twilioUrl, {
             method: "POST",
             headers: {
@@ -156,7 +229,7 @@ Relationship: ${contact.relationship || "Emergency Contact"}`;
           const result = await response.json();
           console.log(`SMS sent to ${contact.name}:`, result);
 
-          // Record notification
+          // Record SMS notification
           await supabase
             .from("alert_notifications")
             .insert({
@@ -169,6 +242,82 @@ Relationship: ${contact.relationship || "Emergency Contact"}`;
               delivered_at: response.ok ? new Date().toISOString() : null,
               error_message: response.ok ? null : JSON.stringify(result),
             });
+
+          // Optionally also send WhatsApp if configured
+          if (twilioWhatsappNumber && contact.phone_number) {
+            try {
+              const waResponse = await fetch(twilioUrl, {
+                method: "POST",
+                headers: {
+                  "Authorization": `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`,
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                  To: `whatsapp:${contact.phone_number}`,
+                  From: `whatsapp:${twilioWhatsappNumber}`,
+                  Body: smsBody,
+                }),
+              });
+              const waResult = await waResponse.json();
+              console.log(`WhatsApp sent to ${contact.name}:`, waResult);
+
+              await supabase
+                .from("alert_notifications")
+                .insert({
+                  alert_id,
+                  recipient_type: "contact",
+                  recipient_id: contact.id,
+                  notification_method: "whatsapp",
+                  status: waResponse.ok ? "delivered" : "failed",
+                  sent_at: new Date().toISOString(),
+                  delivered_at: waResponse.ok ? new Date().toISOString() : null,
+                  error_message: waResponse.ok ? null : JSON.stringify(waResult),
+                });
+            } catch (waErr) {
+              console.error(`Failed to send WhatsApp to ${contact.name}:`, waErr);
+            }
+          }
+
+          // Send email via EmailJS if contact has email and EmailJS is configured
+          if (emailjsServiceId && emailjsTemplateId && emailjsUserId && contact.email) {
+            try {
+              const emailResp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  service_id: emailjsServiceId,
+                  template_id: emailjsTemplateId,
+                  user_id: emailjsUserId,
+                  template_params: {
+                    to_name: contact.name,
+                    message: emergencyMessage,
+                    location: locationUrl,
+                    time: new Date().toISOString(),
+                    phone: profile?.phone_number || "N/A",
+                  },
+                }),
+              });
+
+              const emailResJson = await emailResp.json();
+              console.log(`EmailJS sent to ${contact.name}:`, emailResJson);
+
+              await supabase
+                .from("alert_notifications")
+                .insert({
+                  alert_id,
+                  recipient_type: "contact",
+                  recipient_id: contact.id,
+                  notification_method: "email",
+                  status: emailResp.ok ? "sent" : "failed",
+                  sent_at: new Date().toISOString(),
+                  delivered_at: emailResp.ok ? new Date().toISOString() : null,
+                  error_message: emailResp.ok ? null : JSON.stringify(emailResJson),
+                });
+            } catch (emailErr) {
+              console.error(`Failed to send email to ${contact.name}:`, emailErr);
+            }
+          }
+
         } catch (smsError) {
           console.error(`Failed to send SMS to ${contact.name}:`, smsError);
         }

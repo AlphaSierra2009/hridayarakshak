@@ -1,0 +1,7 @@
+{
+  "source": "/Users/anirdhasarkar/Desktop/testdata/ecg_data.csv",
+  "n_samples": 17847,
+  "sampling_rate": 24.390243902439025,
+  "duration_seconds": 984.566,
+  "scale_applied": null
+}

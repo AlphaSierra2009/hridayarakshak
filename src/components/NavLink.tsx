@@ -16,7 +16,7 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
         to={to}
         className={({ isActive, isPending }) =>
           cn(
-            "px-3 py-2 rounded-lg transition-all duration-300 hover-lift soft-shadow",
+            "px-3 py-2 rounded-lg transition-all duration-300 hover-lift soft-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary",
             "text-foreground/80 hover:text-foreground",
             isActive && "bg-primary/20 text-primary strong-shadow",
             isPending && "opacity-60",

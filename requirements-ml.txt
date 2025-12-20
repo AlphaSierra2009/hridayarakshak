@@ -1,0 +1,14 @@
+numpy
+scipy
+torch
+tqdm
+scikit-learn
+onnx
+onnxruntime
+pytest
+pyedflib
+wfdb
+wandb
+tensorboard
+matplotlib
+pandas

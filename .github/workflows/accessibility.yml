@@ -1,0 +1,39 @@
+name: Accessibility Check
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - '.github/workflows/accessibility.yml'
+  pull_request:
+
+jobs:
+  pa11y-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build
+        run: |
+          npm run build
+
+      - name: Start preview server
+        run: |
+          npm run preview -- --port 5173 &
+          npx wait-on http://localhost:5173
+
+      - name: Run pa11y accessibility scan
+        env:
+          PA11Y_REPORTER: "console"
+        run: |
+          npx pa11y http://localhost:5173 --standard WCAG2AA --threshold 2

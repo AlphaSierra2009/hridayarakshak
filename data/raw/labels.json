@@ -1,0 +1,737 @@
+[
+  {
+    "filename": "ecg_data_win_0000.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0001.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0002.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0003.npy",
+    "label": "normal",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0004.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0005.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0006.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0007.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0008.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0009.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0010.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0011.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0012.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0013.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0014.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0015.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0016.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0017.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0018.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0019.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0020.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0021.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0022.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0023.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0024.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0025.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0026.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0027.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0028.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0029.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0030.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0031.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0032.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0033.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0034.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0035.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0036.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0037.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0038.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0039.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0040.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0041.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0042.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0043.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0044.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0045.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0046.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0047.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0048.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0049.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0050.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0051.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0052.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0053.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0054.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0055.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0056.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0057.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0058.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0059.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0060.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0061.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0062.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0063.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0064.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0065.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0066.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0067.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0068.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0069.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0070.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0071.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0072.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0073.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0074.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0075.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0076.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0077.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0078.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0079.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0080.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0081.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0082.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0083.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0084.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0085.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0086.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0087.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0088.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0089.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0090.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0091.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0092.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0093.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0094.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0095.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0096.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0097.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0098.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0099.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0100.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0101.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0102.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0103.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0104.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0105.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0106.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0107.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0108.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0109.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0110.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0111.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0112.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0113.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0114.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0115.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0116.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0117.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0118.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0119.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0120.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0121.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0122.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0123.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0124.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0125.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0126.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0127.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0128.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0129.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0130.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0131.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0132.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0133.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0134.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0135.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0136.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0137.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0138.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0139.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0140.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0141.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0142.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0143.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0144.npy",
+    "label": "afib",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0145.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  },
+  {
+    "filename": "ecg_data_win_0146.npy",
+    "label": "tachy",
+    "patient_id": "p001"
+  }
+]

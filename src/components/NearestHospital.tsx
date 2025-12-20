@@ -100,7 +100,18 @@ export default function NearestHospital({ location }: NearestHospitalProps) {
       setHospitals(withDist);
     } catch (err) {
       console.error("NearestHospital error", err);
-      toast.error("Failed to find nearby hospitals (try increasing radius)");
+      toast.error("Failed to find nearby hospitals (Overpass timeout)");
+
+      setHospitals([
+        {
+          id: "fallback",
+          name: "Hospital data temporarily unavailable",
+          lat: lat,
+          lon: lon,
+          distanceMeters: undefined,
+          address: "Network issue or API timeout"
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -141,8 +152,8 @@ export default function NearestHospital({ location }: NearestHospitalProps) {
       </div>
 
       {!location ? (
-        <div className="text-sm text-muted-foreground">
-          Waiting for location…
+        <div className="text-sm text-muted-foreground p-3 rounded bg-zinc-900/60">
+          📍 Location access not available yet. Please allow location to find nearby hospitals.
         </div>
       ) : (
         <>
@@ -178,21 +189,23 @@ export default function NearestHospital({ location }: NearestHospitalProps) {
                   <div>
                     <div className="font-medium text-sm">{h.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {h.address ?? formatMeters(h.distanceMeters)}
+                      {h.address || (h.distanceMeters ? formatMeters(h.distanceMeters) : "—")}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Distance: {formatMeters(h.distanceMeters)}
                     </div>
                   </div>
 
-                  <Button
-                    size="sm"
-                    onClick={() => openNavigation(h.lat, h.lon)}
-                    className="whitespace-nowrap"
-                  >
-                    <Navigation className="h-3 w-3 mr-2 inline-block" />
-                    Navigate
-                  </Button>
+                  {h.id !== "fallback" && (
+                    <Button
+                      size="sm"
+                      onClick={() => openNavigation(h.lat, h.lon)}
+                      className="whitespace-nowrap"
+                    >
+                      <Navigation className="h-3 w-3 mr-2 inline-block" />
+                      Navigate
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

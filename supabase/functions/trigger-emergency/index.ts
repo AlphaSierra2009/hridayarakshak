@@ -1,18 +1,48 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std/http/server.ts";
+import twilio from "npm:twilio";
+
+async function sendEmailAlert(payload: {
+  to_email: string;
+  subject: string;
+  message: string;
+}) {
+  const serviceId = Deno.env.get("EMAILJS_SERVICE_ID");
+  const templateId = Deno.env.get("EMAILJS_TEMPLATE_ID");
+  const publicKey = Deno.env.get("EMAILJS_PUBLIC_KEY");
+
+  if (!serviceId || !templateId || !publicKey) {
+    console.warn("EmailJS env vars missing, skipping email");
+    return;
+  }
+
+  const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      template_params: {
+        to_email: payload.to_email,
+        subject: payload.subject,
+        message: payload.message,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("EmailJS failed:", text);
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
-
-interface TriggerRequest {
-  user_id: string;
-  latitude: number;
-  longitude: number;
-  alert_type?: string;
-  notes?: string;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -20,68 +50,71 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { phone, message, is_test, email } = await req.json();
 
-    const { user_id, latitude, longitude, alert_type = "manual", notes }: TriggerRequest = await req.json();
-
-    console.log("Manual emergency trigger:", { user_id, latitude, longitude, alert_type });
-
-    // Create emergency alert
-    const { data: alert, error: alertError } = await supabase
-      .from("emergency_alerts")
-      .insert({
-        user_id,
-        alert_type,
-        status: "triggered",
-        latitude,
-        longitude,
-        notes,
-      })
-      .select()
-      .single();
-
-    if (alertError) {
-      console.error("Error creating alert:", alertError);
+    if (!phone) {
       return new Response(
-        JSON.stringify({ error: "Failed to create alert" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Phone number is required" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
-    // Call emergency alert function to notify hospitals and contacts
-    const alertResponse = await fetch(`${supabaseUrl}/functions/v1/emergency-alert`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${supabaseServiceKey}`,
-      },
-      body: JSON.stringify({
-        alert_id: alert.id,
-        user_id,
-        latitude,
-        longitude,
-      }),
+    const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+    const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+    const fromNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
+
+    if (!accountSid || !authToken || !fromNumber) {
+      return new Response(
+        JSON.stringify({ error: "Twilio environment variables not set" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const client = twilio(accountSid, authToken);
+
+    const sms = await client.messages.create({
+      from: fromNumber,
+      to: phone,
+      body: message || "🚨 TEST EMERGENCY ALERT from Hridaya Rakshak",
     });
 
-    const alertResult = await alertResponse.json();
-    console.log("Emergency alert result:", alertResult);
+    if (email) {
+      await sendEmailAlert({
+        to_email: email,
+        subject: is_test
+          ? "TEST Emergency Alert"
+          : "🚨 Emergency Alert – ECG Anomaly Detected",
+        message:
+          message ||
+          "An abnormal ECG pattern was detected. Please take immediate action.",
+      });
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        alert_id: alert.id,
-        ...alertResult,
+        sid: sms.sid,
+        test: !!is_test,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
-  } catch (error: unknown) {
-    console.error("Error triggering emergency:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+  } catch (error) {
+    console.error("SMS trigger error:", error);
     return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: String(error) }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });
