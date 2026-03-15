@@ -2,16 +2,97 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://yzlpkbufdwpgdfkbfzmj.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6bHBrYnVmZHdwZ2Rma2Jmem1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NTA2NzAsImV4cCI6MjA4MDUyNjY3MH0.Q4MQwubsst8jXhq4xE5nLpVpNyUnla4Y3FKIJSgfd1E";
+// Prefer environment variables so developers don't leak project keys.
+const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+let supabase: any;
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
+if (!envUrl || !envKey) {
+  // Minimal mock supabase client for local development when env vars are missing.
+  // This prevents runtime DNS errors and provides safe no-op behaviour.
+  console.warn('VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY not set — using mock Supabase client.');
+
+  const noop = async () => ({ data: null, error: null });
+
+  const mockFrom = (_table: string) => ({
+    select: async () => ({ data: [], error: null }),
+    insert: async () => ({ data: null, error: null }),
+    upsert: async () => ({ data: null, error: null }),
+    update: () => ({ eq: async () => ({ data: null, error: null }) }),
+    delete: () => ({ eq: async () => ({ data: null, error: null }) }),
+    order: () => ({ limit: async () => ({ data: [], error: null }) }),
+  });
+
+  const mockFunctions = {
+    invoke: async (_name: string, _opts?: any) => ({ data: null, error: null }),
+  };
+
+  const mockAuth = {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: (_cb: any) => ({ data: null, error: null }),
+    signUp: async (_opts: any) => ({ data: null, error: null }),
+    signInWithPassword: async (_opts: any) => ({ data: null, error: null }),
+    signOut: async () => ({ data: null, error: null }),
+  };
+
+  const mockRealtime = (() => {
+    const channels: Record<string, any> = {};
+    return {
+      channel: (name: string) => {
+        const ch = {
+          name,
+          handlers: [] as any[],
+          on: function (_event: string, _opts: any, cb: any) {
+            this.handlers.push({ event: _event, opts: _opts, cb });
+            return this;
+          },
+          subscribe: function () {
+            channels[name] = this;
+            return { id: name, unsubscribe: () => delete channels[name] };
+          },
+          unsubscribe: function () {
+            delete channels[name];
+          },
+        };
+        return ch;
+      },
+      removeChannel: (c: any) => {
+        if (!c) return;
+        if (typeof c === "string") delete channels[c];
+        else if (c.id) delete channels[c.id];
+        else if (c.unsubscribe) c.unsubscribe();
+      },
+      // helper for tests: emit to a channel
+      __emit: (name: string, payload: any) => {
+        const ch = channels[name];
+        if (ch && ch.handlers) {
+          ch.handlers.forEach((h: any) => h.cb(payload));
+        }
+      },
+    };
+  })();
+
+  // assign a loosely-typed mock matching the supabase client surface used in the app
+  supabase = {
+    from: mockFrom,
+    functions: mockFunctions,
+    auth: mockAuth,
+    channel: mockRealtime.channel,
+    removeChannel: mockRealtime.removeChannel,
+    // expose mock internals for debugging/tests
+    __mock: mockRealtime,
+  };
+
+} else {
+  // Create a real Supabase client when env variables are provided.
+  supabase = createClient<Database>(envUrl, envKey, {
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
+}
+
+export { supabase };

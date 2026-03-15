@@ -48,22 +48,50 @@ jobs:
 
       - name: Wait for service
         run: |
-          for i in {1..20}; do
-            if curl -s http://localhost:8000/health | grep -q '"ok": true'; then
-              echo "service healthy" && break
+          # Wait for the container to be running and the HTTP health endpoint to report ok
+          MAX_TRIES=40
+          SLEEP=3
+          for i in $(seq 1 $MAX_TRIES); do
+            echo "health-check attempt $i/$MAX_TRIES"
+            # ensure container is running
+            if docker ps --filter "name=ecg-test" --filter "status=running" --format '{{.Names}}' | grep -q ecg-test; then
+              if curl --fail --silent --show-error http://localhost:8000/health 2>/dev/null | grep -q '"ok": true'; then
+                echo "service healthy" && exit 0
+              fi
+            else
+              echo "container not running yet"
             fi
-            sleep 3
+            sleep $SLEEP
           done
+          echo "service did not become healthy after $((MAX_TRIES*SLEEP))s"
+          echo "=== container logs ==="
+          docker logs ecg-test || true
+          exit 1
 
       - name: Run inference smoke test
         run: |
           python - << 'PY'
-import requests, json
-sig = [0.1 * __import__('math').sin(2*__import__('math').pi*i/250) for i in range(250*5)]
-r = requests.post('http://localhost:8000/infer', json={'signal': sig, 'sampling_rate': 250}, timeout=10)
-print('status', r.status_code, r.text[:200])
-if r.status_code != 200:
-    raise SystemExit('Infer failed')
+import requests, json, time, sys, math, subprocess
+sig = [0.1 * math.sin(2*math.pi*i/250) for i in range(250*5)]
+url = 'http://localhost:8000/infer'
+max_attempts = 6
+for attempt in range(1, max_attempts+1):
+    try:
+        r = requests.post(url, json={'signal': sig, 'sampling_rate': 250}, timeout=30)
+        print('attempt', attempt, 'status', r.status_code)
+        print(r.text[:1000])
+        if r.status_code == 200:
+            break
+    except Exception as e:
+        print('attempt', attempt, 'error', e)
+    sleep = 2 * attempt
+    print('sleeping', sleep, 's before retry')
+    time.sleep(sleep)
+else:
+    print('infer failed after retries')
+    print('=== container logs ===')
+    subprocess.call(['docker', 'logs', 'ecg-test'])
+    sys.exit(1)
 PY
 
       - name: Setup Deno

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 
 interface Hospital {
   name: string;
@@ -16,6 +15,7 @@ export const useNearestHospital = (
 ) => {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'ok' | 'unavailable'>('idle');
 
   useEffect(() => {
     if (!userLocation) return;
@@ -32,13 +32,39 @@ export const useNearestHospital = (
           out body;
         `;
 
-        const response = await fetch('https://overpass-api.de/api/interpreter', {
-          method: 'POST',
-          body: query,
+        // Use a short timeout to avoid long blocking requests
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 5000);
+        let response: Response;
+        try {
+          response = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+            body: `data=${encodeURIComponent(query)}`,
+            signal: controller.signal,
+          });
+        } finally {
+          window.clearTimeout(timeout);
+        }
+
+        if (!response || !response.ok) {
+          // Treat any non-ok as unavailable without throwing up the stack
+          console.warn('Nearest hospitals: Overpass API returned non-ok response or was unavailable');
+          setHospitals([]);
+          setStatus('unavailable');
+          return;
+        }
+
+        const data = await response.json().catch((e) => {
+          console.warn('Nearest hospitals: failed to parse Overpass response', e);
+          return null;
         });
 
-        if (!response.ok) throw new Error('Failed to fetch hospitals');
-        const data = await response.json();
+        if (!data) {
+          setHospitals([]);
+          setStatus('unavailable');
+          return;
+        }
 
         if (data.elements && data.elements.length > 0) {
           const hospitalsWithDistance = data.elements
@@ -78,10 +104,13 @@ export const useNearestHospital = (
             .slice(0, 5);
 
           setHospitals(wellRated);
+          setStatus('ok');
         }
       } catch (error) {
-        console.error('Nearest hospitals error:', error);
-        toast.error('Failed to locate hospitals');
+        // Be tolerant of network / DNS / timeout errors — surface as a non-fatal warning
+        console.warn('Nearest hospitals error (network/API):', error);
+        setHospitals([]);
+        setStatus('unavailable');
       } finally {
         setLoading(false);
       }

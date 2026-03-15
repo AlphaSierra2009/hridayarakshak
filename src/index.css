@@ -4,88 +4,93 @@
 
 @layer base {
   :root {
-    /* Dark / black theme */
-    --background: 0 0% 4%; /* near-black */
-    --foreground: 0 0% 96%; /* near-white text */
+    /* Default dark-leaning palette tuned for medical red accents */
+    --background: 220 12% 6%;
+    --foreground: 210 8% 96%;
 
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 96%;
+    --card: 220 10% 10%;
+    --card-foreground: 210 8% 96%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 220 10% 10%;
+    --popover-foreground: 210 8% 96%;
 
-    /* Keep a subtle teal/green accent for ECG elements */
-    --primary: 175 80% 45%;
-    --primary-foreground: 0 0% 96%;
+    /* Medical-red primary / ECG accents */
+    --primary: 350 78% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 8% 8%;
-    --secondary-foreground: 0 0% 88%;
+    --secondary: 345 18% 12%;
+    --secondary-foreground: 210 8% 92%;
 
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 64%;
+    --muted: 220 10% 12%;
+    --muted-foreground: 210 8% 72%;
 
-    --accent: 160 80% 40%;
-    --accent-foreground: 0 0% 96%;
+    --accent: 350 70% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 80% 60%;
-    --destructive-foreground: 0 0% 96%;
+    --destructive: 350 78% 48%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 45%;
+    --success: 142 60% 45%;
     --success-foreground: 0 0% 96%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 85% 50%;
     --warning-foreground: 0 0% 96%;
 
-    --emergency: 0 85% 65%;
-    --emergency-foreground: 0 0% 96%;
+    --emergency: 350 85% 50%;
+    --emergency-foreground: 0 0% 100%;
 
-    /* ECG-specific colors */
-    --ecg-line: 150 90% 60%;
-    --ecg-grid: 0 0% 10%;
-    --ecg-background: 220 25% 6%;
-    --ecg-alert: 0 85% 60%;
+    /* ECG-specific colors: use a warm red for line and a very dark grid */
+    --ecg-line: 350 90% 60%;
+    --ecg-grid: 220 10% 12%;
+    --ecg-background: 220 10% 5%;
+    --ecg-alert: 350 90% 55%;
 
-    --border: 0 0% 10%;
-    --input: 0 0% 10%;
-    --ring: 175 80% 40%;
+    --border: 220 10% 12%;
+    --input: 220 10% 14%;
+    --ring: 350 90% 55%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 0 0% 8%;
-    --sidebar-primary-foreground: 0 0% 96%;
-    --sidebar-accent: 0 0% 6%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 8%;
-    --sidebar-ring: 175 80% 40%;
+    --sidebar-background: 220 8% 8%;
+    --sidebar-foreground: 210 8% 96%;
+    --sidebar-primary: 220 8% 10%;
+    --sidebar-primary-foreground: 210 8% 96%;
+    --sidebar-accent: 220 8% 9%;
+    --sidebar-accent-foreground: 210 8% 96%;
+    --sidebar-border: 220 8% 11%;
+    --sidebar-ring: 350 90% 55%;
 
-    transition: all 0.3s ease-in-out;
+    /* Typographic rhythm */
+    --base-font-size: 16px;
+    --scale-ratio: 1.125;
+
+    transition: all 0.25s ease-in-out;
   }
 
   .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
+    /* Dark mode refinement — medical red accents retained */
+    --background: 220 10% 5%;
+    --foreground: 210 8% 96%;
 
-    --card: 215 30% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 220 8% 9%;
+    --card-foreground: 210 8% 96%;
 
-    --popover: 215 30% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 220 8% 9%;
+    --popover-foreground: 210 8% 96%;
 
-    --primary: 210 80% 55%;
+    --primary: 350 82% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 20%;
-    --secondary-foreground: 210 20% 90%;
+    --secondary: 345 18% 14%;
+    --secondary-foreground: 210 8% 92%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 210 15% 60%;
+    --muted: 220 8% 14%;
+    --muted-foreground: 210 8% 72%;
 
-    --accent: 215 25% 22%;
-    --accent-foreground: 210 20% 95%;
+    --accent: 350 75% 46%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 50%;
+    --destructive: 350 78% 48%;
     --destructive-foreground: 0 0% 100%;
 
     --success: 142 60% 45%;
@@ -94,27 +99,27 @@
     --warning: 38 85% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --emergency: 0 85% 50%;
+    --emergency: 350 90% 52%;
     --emergency-foreground: 0 0% 100%;
 
-    --ecg-line: 142 70% 55%;
-    --ecg-grid: 215 25% 25%;
-    --ecg-background: 215 35% 8%;
+    --ecg-line: 350 95% 62%;
+    --ecg-grid: 220 9% 14%;
+    --ecg-background: 220 10% 4%;
 
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 210 80% 55%;
+    --border: 220 8% 11%;
+    --input: 220 8% 13%;
+    --ring: 350 90% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 220 7% 8%;
+    --sidebar-foreground: 210 8% 96%;
+    --sidebar-primary: 220 7% 10%;
+    --sidebar-primary-foreground: 210 8% 96%;
+    --sidebar-accent: 220 7% 9%;
+    --sidebar-accent-foreground: 210 8% 96%;
+    --sidebar-border: 220 7% 11%;
+    --sidebar-ring: 350 90% 55%;
 
-    transition: all 0.3s ease-in-out;
+    transition: all 0.25s ease-in-out;
   }
 }
 
@@ -125,10 +130,15 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    @apply transition-colors duration-300;
+    @apply transition-colors duration-200;
     scroll-behavior: smooth;
 
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.45;
+    font-size: var(--base-font-size);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
   }
 }
 
@@ -151,7 +161,7 @@
   }
 
   .emergency-pulse {
-    animation: emergency-pulse 1.5s ease-in-out infinite;
+    animation: emergency-pulse 1.6s ease-in-out infinite;
   }
 
   @keyframes emergency-pulse {
@@ -159,7 +169,7 @@
       box-shadow: 0 0 0 0 hsl(var(--emergency) / 0.7);
     }
     50% {
-      box-shadow: 0 0 0 15px hsl(var(--emergency) / 0);
+      box-shadow: 0 0 18px 6px hsl(var(--emergency) / 0.12), 0 0 6px 2px hsl(var(--emergency) / 0.18);
     }
   }
 
@@ -170,7 +180,12 @@
 
   /* Soft shadow */
   .soft-shadow {
-    box-shadow: 0 4px 20px hsl(var(--foreground) / 0.1);
+    box-shadow: 0 6px 28px hsl(var(--foreground) / 0.08);
+  }
+
+  /* ECG glow utility: subtle neon glow for waveform elements */
+  .ecg-glow {
+    filter: drop-shadow(0 0 6px hsl(var(--ecg-line) / 0.25)) drop-shadow(0 0 10px hsl(var(--ecg-line) / 0.12));
   }
 
   /* Strong shadow */

@@ -46,6 +46,7 @@ out center;`;
 export default function NearestHospital({ location }: NearestHospitalProps) {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'ok' | 'unavailable'>('idle');
   const [radius, setRadius] = useState<number>(3000);
 
   useEffect(() => {
@@ -56,20 +57,45 @@ export default function NearestHospital({ location }: NearestHospitalProps) {
   async function fetchNearby(lat: number, lon: number, searchRadius = 3000) {
     setLoading(true);
     setHospitals([]);
+    setStatus('idle');
     try {
       const q = overpassQuery(lat, lon, searchRadius);
       const url = `https://overpass-api.de/api/interpreter`;
+      // Abort if taking too long to avoid blocking UX
+      const controller = new AbortController();
+      const t = window.setTimeout(() => controller.abort(), 5000);
+      let res: Response;
+      try {
+        res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          },
+          body: `data=${encodeURIComponent(q)}`,
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(t);
+      }
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        },
-        body: `data=${encodeURIComponent(q)}`,
+      if (!res || !res.ok) {
+        console.warn('NearestHospital: Overpass unavailable or returned non-ok');
+        setHospitals([]);
+        setStatus('unavailable');
+        return;
+      }
+
+      const json = await res.json().catch((e) => {
+        console.warn('NearestHospital: failed to parse response', e);
+        return null;
       });
 
-      if (!res.ok) throw new Error("Overpass failed");
-      const json = await res.json();
+      if (!json) {
+        setHospitals([]);
+        setStatus('unavailable');
+        return;
+      }
+
       const elements = json.elements || [];
 
       const found: Hospital[] = elements
@@ -99,19 +125,10 @@ export default function NearestHospital({ location }: NearestHospitalProps) {
 
       setHospitals(withDist);
     } catch (err) {
-      console.error("NearestHospital error", err);
-      toast.error("Failed to find nearby hospitals (Overpass timeout)");
-
-      setHospitals([
-        {
-          id: "fallback",
-          name: "Hospital data temporarily unavailable",
-          lat: lat,
-          lon: lon,
-          distanceMeters: undefined,
-          address: "Network issue or API timeout"
-        }
-      ]);
+      // Do not throw - surface a friendly unavailable state
+      console.warn("NearestHospital fetch failed (network/API)", err);
+      setHospitals([]);
+      setStatus('unavailable');
     } finally {
       setLoading(false);
     }
@@ -174,6 +191,10 @@ export default function NearestHospital({ location }: NearestHospitalProps) {
           {loading ? (
             <div className="text-sm text-muted-foreground">
               Searching nearby hospitals…
+            </div>
+          ) : status === 'unavailable' ? (
+            <div className="text-sm text-muted-foreground">
+              Nearby hospitals temporarily unavailable. Please try again later.
             </div>
           ) : hospitals.length === 0 ? (
             <div className="text-sm text-muted-foreground">
