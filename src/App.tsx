@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Analytics } from "@vercel/analytics/react";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
@@ -65,6 +66,7 @@ const App = () => (
             <TooltipProvider>
               <Sonner />
               <AppRoutes />
+              <Analytics />
             </TooltipProvider>
           </ErrorBoundary>
         </BrowserRouter>
